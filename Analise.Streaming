@@ -1,0 +1,182 @@
+**Schema (MySQL v5.7)**
+
+    CREATE TABLE users (
+        user_id INT PRIMARY KEY,
+        name VARCHAR(50),
+        country VARCHAR(50),
+        signup_date DATE
+    );
+    
+    INSERT INTO users (user_id, name, country, signup_date) VALUES
+    (1, 'Alice', 'Brazil', '2023-01-15'),
+    (2, 'Bob', 'USA', '2023-02-20'),
+    (3, 'Carlos', 'Brazil', '2023-03-05'),
+    (4, 'Diana', 'UK', '2023-01-30'),
+    (5, 'Ethan', 'USA', '2023-02-10'),
+    (6, 'Fiona', 'Germany', '2023-03-12'),
+    (7, 'Gabriel', 'Brazil', '2023-01-22'),
+    (8, 'Hanna', 'Canada', '2023-03-01'),
+    (9, 'Ivan', 'Brazil', '2023-02-28'),
+    (10, 'Julia', 'UK', '2023-03-15');
+    
+    CREATE TABLE movies (
+        movie_id INT PRIMARY KEY,
+        title VARCHAR(100),
+        category VARCHAR(50),
+        release_year INT,
+        rating FLOAT
+    );
+    
+    INSERT INTO movies (movie_id, title, category, release_year, rating) VALUES
+    (1, 'The Matrix', 'Action', 1999, 8.7),
+    (2, 'Inception', 'Sci-Fi', 2010, 8.8),
+    (3, 'Stranger Things', 'Drama', 2016, 8.9),
+    (4, 'The Office', 'Comedy', 2005, 8.9),
+    (5, 'Breaking Bad', 'Drama', 2008, 9.5),
+    (6, 'Avatar', 'Action', 2009, 7.8),
+    (7, 'Friends', 'Comedy', 1994, 8.9),
+    (8, 'Interstellar', 'Sci-Fi', 2014, 8.6),
+    (9, 'The Crown', 'Drama', 2016, 8.7),
+    (10, 'The Witcher', 'Fantasy', 2019, 8.2);
+    
+    CREATE TABLE watch_history (
+        history_id INT PRIMARY KEY,
+        user_id INT,
+        movie_id INT,
+        watch_date DATE,
+        watch_time_minutes INT,
+        FOREIGN KEY (user_id) REFERENCES users(user_id),
+        FOREIGN KEY (movie_id) REFERENCES movies(movie_id)
+    );
+    
+    INSERT INTO watch_history (history_id, user_id, movie_id, watch_date, watch_time_minutes) VALUES
+    (1, 1, 1, '2023-08-01', 136),
+    (2, 1, 2, '2023-08-02', 148),
+    (3, 2, 3, '2023-08-03', 50),
+    (4, 2, 4, '2023-08-05', 22),
+    (5, 3, 5, '2023-08-06', 47),
+    (6, 3, 1, '2023-08-07', 136),
+    (7, 4, 2, '2023-08-08', 148),
+    (8, 4, 6, '2023-08-09', 162),
+    (9, 5, 7, '2023-08-10', 22),
+    (10, 5, 8, '2023-08-11', 169),
+    (11, 6, 3, '2023-08-12', 50),
+    (12, 6, 9, '2023-08-13', 60),
+    (13, 7, 1, '2023-08-14', 136);
+    
+
+---
+
+**Query #1**
+
+    -- Pop 5 filmes mais assistidos no último mês
+    SELECT m.title, COUNT(*) AS total_views
+    FROM watch_history w
+    JOIN movies m ON w.movie_id = m.movie_id
+    GROUP BY m.title
+    ORDER BY total_views DESC
+    LIMIT 5;
+
+| title           | total_views |
+| --------------- | ----------- |
+| The Matrix      | 3           |
+| Stranger Things | 2           |
+| Inception       | 2           |
+| Friends         | 1           |
+| Breaking Bad    | 1           |
+
+---
+**Query #2**
+
+    
+    
+    
+    -- Média de tempo assistido por categoria
+    SELECT AVG(watch_time_minutes), m.category
+    FROM watch_history w 
+    INNER JOIN movies m
+    ON w.movie_id = m.movie_id
+    GROUP BY m.category;
+
+| AVG(watch_time_minutes) | category |
+| ----------------------- | -------- |
+| 142.5000                | Action   |
+| 22.0000                 | Comedy   |
+| 51.7500                 | Drama    |
+| 155.0000                | Sci-Fi   |
+
+---
+**Query #3**
+
+    
+    
+    -- Usuarios com mais de um filme assistido
+    SELECT 
+        u.user_id, 
+        COUNT(h.movie_id) AS filmes_assistidos,
+        DATE_FORMAT(h.watch_date, '%Y-%m') AS mes_ano
+    FROM users u
+    JOIN watch_history h 
+        ON u.user_id = h.user_id
+    GROUP BY u.user_id, mes_ano
+    HAVING filmes_assistidos > 1
+    ORDER BY filmes_assistidos DESC;
+
+| user_id | filmes_assistidos | mes_ano |
+| ------- | ----------------- | ------- |
+| 5       | 2                 | 2023-08 |
+| 6       | 2                 | 2023-08 |
+| 1       | 2                 | 2023-08 |
+| 2       | 2                 | 2023-08 |
+| 3       | 2                 | 2023-08 |
+| 4       | 2                 | 2023-08 |
+
+---
+**Query #4**
+
+    
+    
+    
+    -- FILMES COM MAIOR RATING
+    SELECT title, rating
+    FROM movies
+    ORDER BY rating DESC
+    LIMIT 5;
+
+| title           | rating |
+| --------------- | ------ |
+| Breaking Bad    | 9.5    |
+| Stranger Things | 8.9    |
+| The Office      | 8.9    |
+| Friends         | 8.9    |
+| Inception       | 8.8    |
+
+---
+**Query #5**
+
+    
+    
+    -- Distribuiçao de filmes assistidos no ano de lançamento
+    SELECT 
+        m.release_year,
+        COUNT(w.history_id) AS total_views
+    FROM movies m
+    LEFT JOIN watch_history w
+        ON m.movie_id = w.movie_id
+    GROUP BY m.release_year
+    ORDER BY m.release_year;
+
+| release_year | total_views |
+| ------------ | ----------- |
+| 1994         | 1           |
+| 1999         | 3           |
+| 2005         | 1           |
+| 2008         | 1           |
+| 2009         | 1           |
+| 2010         | 2           |
+| 2014         | 1           |
+| 2016         | 3           |
+| 2019         | 0           |
+
+---
+
