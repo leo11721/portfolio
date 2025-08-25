@@ -1,3 +1,22 @@
+# Projeto : Plataforma de Streaming SQL
+
+## Objetivo
+Simular um banco de dados de uma plataforma de streaming e responder perguntas de negócio usando SQL.
+
+## Estrutura das tabelas
+- **users**: informações dos usuários (id, nome, país, data de cadastro)
+- **movies**: informações dos filmes (id, título, categoria, ano de lançamento, rating)
+- **watch_history**: histórico de visualizações (id, usuário, filme, data, tempo assistido)
+
+## Queries realizadas
+1. Top 5 filmes mais assistidos
+2. Média de tempo assistido por categoria
+3. Usuários ativos por país
+4. Usuários que assistiram mais de 10 filmes em um mês
+5. Filmes com melhor rating
+6. Distribuição de visualizações por ano de lançamento
+
+
 **Schema (MySQL v5.7)**
 
     CREATE TABLE users (
